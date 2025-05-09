@@ -51,6 +51,8 @@ services:
     image: ghcr.io/maybe-finance/maybe:latest
     volumes:
       - app-storage:/rails/storage
+    networks:
+      - maybe_net
     ports:
       - 3000:3000
     restart: unless-stopped
@@ -66,6 +68,8 @@ services:
     image: ghcr.io/maybe-finance/maybe:latest
     command: bundle exec sidekiq
     restart: unless-stopped
+    networks:
+      - maybe_net
     depends_on:
       redis:
         condition: service_healthy
@@ -77,6 +81,8 @@ services:
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    networks:
+      - maybe_net
     environment:
       <<: *db_env
     healthcheck:
@@ -87,11 +93,11 @@ services:
 
   redis:
     image: redis:latest
-    ports:
-      - 6379:6379
     restart: unless-stopped
     volumes:
       - redis-data:/data
+    networks:
+      - maybe_net
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
@@ -102,3 +108,7 @@ volumes:
   app-storage:
   postgres-data:
   redis-data:
+
+networks:
+  maybe_net:
+    driver: bridge
